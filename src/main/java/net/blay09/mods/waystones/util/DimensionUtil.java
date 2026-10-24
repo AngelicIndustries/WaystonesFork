@@ -12,7 +12,7 @@ public class DimensionUtil {
         idToNameMap.put(id, name);
     }
 
-    // TODO: move to FentLib
+    // TODO: move to AngelLib
     public static String idToName(int id) {
         if (idToNameMap.containsKey(id)) {
             return idToNameMap.get(id);

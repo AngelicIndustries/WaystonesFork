@@ -32,9 +32,10 @@ import cpw.mods.fml.common.registry.GameRegistry;
 @Mod(
     modid = Waystones.MODID,
     name = "Waystones-X",
+    dependencies = "required-after:unimixins@[0.3.1,)",
     guiFactory = "net.blay09.mods.waystones.client.gui.GuiFactory",
     customProperties = { @Mod.CustomProperty(k = "license", v = "LGPLv3"),
-        @Mod.CustomProperty(k = "issueTrackerUrl", v = "https://github.com/JackOfNoneTrades/WaystonesFork/issues"),
+        @Mod.CustomProperty(k = "issueTrackerUrl", v = "https://github.com/AngelicIndustries/WaystonesFork/issues"),
         @Mod.CustomProperty(k = "iconFile", v = "assets/waystones/logo_round.png"),
         @Mod.CustomProperty(k = "backgroundFile", v = "assets/waystones/background.png") })
 @SuppressWarnings("unused")

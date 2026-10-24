@@ -1,50 +1,19 @@
 package net.blay09.mods.waystones.core;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.blay09.mods.waystones.Waystones;
 
-import cpw.mods.fml.relauncher.FMLLaunchHandler;
+import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
+import com.gtnewhorizon.gtnhmixins.builders.IMixins;
+
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @SuppressWarnings("unused")
 @IFMLLoadingPlugin.MCVersion("1.7.10")
-public class EarlyMixinLoader extends FentEarlyMixinLoader {
-
-    public enum Side {
-        CLIENT,
-        SERVER,
-        BOTH
-    }
-
-    public static boolean isServer() {
-        return FMLLaunchHandler.side()
-            .isServer();
-    }
-
-    public static class MixinBuilder {
-
-        private final List<String> mixins = new ArrayList<>();
-
-        public MixinBuilder addMixin(String name, Side side, String modid) {
-            if ((side == Side.CLIENT && isServer()) || (side == Side.SERVER && !isServer())) {
-                return this;
-            }
-
-            mixins.add(modid + "." + name);
-            return this;
-        }
-
-        public MixinBuilder addMixin(String name, Side side) {
-            return addMixin(name, side, "minecraft");
-        }
-
-        public List<String> build() {
-            return mixins;
-        }
-    }
+public class EarlyMixinLoader implements IEarlyMixinLoader, IFMLLoadingPlugin {
 
     @Override
     public String getMixinConfig() {
@@ -53,23 +22,29 @@ public class EarlyMixinLoader extends FentEarlyMixinLoader {
 
     @Override
     public List<String> getMixins(Set<String> loadedCoreMods) {
-        return new MixinBuilder()
-            // Accessors
-            .addMixin("AccessorGuiContainer", Side.CLIENT)
-            .addMixin("AccessorGuiScreen", Side.BOTH)
-            .addMixin("AccessorStructureComponent", Side.BOTH)
-            .addMixin("AccessorDimensionManager", Side.BOTH, "minecraftforge")
-            .addMixin("AccessorResourcePackRepository", Side.CLIENT)
-            .addMixin("AccessorResourcePackRepositoryEntry", Side.CLIENT)
+        return IMixins.getEarlyMixins(Mixins.class, loadedCoreMods);
+    }
 
-            // Rest
-            .addMixin("MixinStructureVillagePieces", Side.BOTH)
-            .addMixin("MixinComponentScatteredFeaturePiecesDesertPyramid", Side.BOTH)
-            .addMixin("MixinComponentScatteredFeaturePiecesJunglePyramid", Side.BOTH)
-            .addMixin("MixinStructureStrongholdPiecesCrossing", Side.BOTH)
-            .addMixin("MixinStructureNetherBridgePiecesPiece", Side.BOTH)
-            .addMixin("MixinWorldGenSpikes", Side.BOTH)
-            .addMixin("MixinResourcePackRepository", Side.CLIENT)
-            .build();
+    @Override
+    public String[] getASMTransformerClass() {
+        return null;
+    }
+
+    @Override
+    public String getModContainerClass() {
+        return null;
+    }
+
+    @Override
+    public String getSetupClass() {
+        return null;
+    }
+
+    @Override
+    public void injectData(Map<String, Object> data) {}
+
+    @Override
+    public String getAccessTransformerClass() {
+        return null;
     }
 }
