@@ -1,5 +1,7 @@
 package net.blay09.mods.waystones;
 
+import java.io.File;
+
 import net.blay09.mods.waystones.util.WaystoneEntry;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -10,6 +12,8 @@ import net.minecraftforge.common.util.Constants;
 public class GlobalWaystoneData extends WorldSavedData {
 
     private static final String DATA_NAME = "waystones_global";
+
+    private boolean readFromFile;
 
     public GlobalWaystoneData() {
         super(DATA_NAME);
@@ -28,6 +32,7 @@ public class GlobalWaystoneData extends WorldSavedData {
             entries[i].setGlobal(true);
         }
         WaystoneManager.setServerWaystones(entries);
+        readFromFile = true;
     }
 
     @Override
@@ -46,6 +51,27 @@ public class GlobalWaystoneData extends WorldSavedData {
             world.mapStorage.setData(DATA_NAME, data);
         }
         return data;
+    }
+
+    public static void load(World world) {
+        GlobalWaystoneData data = get(world);
+        File file = world.getSaveHandler()
+            .getMapFileFromName(DATA_NAME);
+        if (data.readFromFile) {
+            Waystones.LOG.info(
+                "Loaded {} global waystones from {}",
+                WaystoneManager.getServerWaystones()
+                    .size(),
+                file);
+        } else if (file != null && file.exists()) {
+            // MapStorage swallows read errors and hands back empty data, which overwrites the file on the next save
+            Waystones.LOG.error(
+                "Could not read {} (see the stack trace above). Global waystones are now empty and the file will be "
+                    + "overwritten on the next waystone change. Stop the server and restore it from a backup.",
+                file);
+        } else {
+            Waystones.LOG.info("No global waystone data found, starting with no global waystones");
+        }
     }
 
     public static void save(World world) {

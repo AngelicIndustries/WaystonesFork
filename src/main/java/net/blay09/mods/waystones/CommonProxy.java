@@ -75,7 +75,7 @@ public class CommonProxy {
     @SubscribeEvent
     public void onWorldLoad(WorldEvent.Load event) {
         if (!event.world.isRemote && event.world.provider.dimensionId == 0) {
-            GlobalWaystoneData.get(event.world);
+            GlobalWaystoneData.load(event.world);
             WorldSpawnWaystone.tryGenerate(event.world);
         }
     }

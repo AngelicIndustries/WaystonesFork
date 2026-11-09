@@ -32,11 +32,11 @@ public class MessageWaystones implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        entries = new WaystoneEntry[buf.readByte()];
+        entries = new WaystoneEntry[buf.readInt()];
         for (int i = 0; i < entries.length; i++) {
             entries[i] = WaystoneEntry.read(buf);
         }
-        serverEntries = new WaystoneEntry[buf.readByte()];
+        serverEntries = new WaystoneEntry[buf.readInt()];
         for (int i = 0; i < serverEntries.length; i++) {
             serverEntries[i] = WaystoneEntry.read(buf);
             serverEntries[i].setGlobal(true);
@@ -45,7 +45,7 @@ public class MessageWaystones implements IMessage {
         lastFreeWarp = buf.readLong();
         lastWarpStoneUse = buf.readLong();
         lastWaystoneUse = buf.readLong();
-        pinnedWaystones = new String[buf.readByte()];
+        pinnedWaystones = new String[buf.readInt()];
         for (int i = 0; i < pinnedWaystones.length; i++) {
             pinnedWaystones[i] = ByteBufUtils.readUTF8String(buf);
         }
@@ -59,11 +59,11 @@ public class MessageWaystones implements IMessage {
 
     @Override
     public void toBytes(ByteBuf buf) {
-        buf.writeByte(entries.length);
+        buf.writeInt(entries.length);
         for (WaystoneEntry entry : entries) {
             entry.write(buf);
         }
-        buf.writeByte(serverEntries.length);
+        buf.writeInt(serverEntries.length);
         for (WaystoneEntry entry : serverEntries) {
             entry.write(buf);
         }
@@ -71,7 +71,7 @@ public class MessageWaystones implements IMessage {
         buf.writeLong(lastFreeWarp);
         buf.writeLong(lastWarpStoneUse);
         buf.writeLong(lastWaystoneUse);
-        buf.writeByte(pinnedWaystones.length);
+        buf.writeInt(pinnedWaystones.length);
         for (String s : pinnedWaystones) {
             ByteBufUtils.writeUTF8String(buf, s);
         }
