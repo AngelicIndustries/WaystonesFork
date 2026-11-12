@@ -3,6 +3,7 @@ package net.blay09.mods.waystones.client.gui;
 import net.blay09.mods.waystones.PlayerWaystoneData;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
+import net.blay09.mods.waystones.compat.AntiqueAtlasCompat;
 import net.blay09.mods.waystones.network.NetworkHandler;
 import net.blay09.mods.waystones.network.message.MessagePinWaystone;
 import net.blay09.mods.waystones.util.ClientUtil;
@@ -22,6 +23,8 @@ public class GuiButtonWaystone extends GuiButton {
         Waystones.MODID,
         "textures/gui/xporb.png");
 
+    private static final int VILLAGE_ICON_GAP = 3;
+
     public int sideButtonSize;
     public int crossButtonX;
     public int buttonY;
@@ -33,12 +36,16 @@ public class GuiButtonWaystone extends GuiButton {
     private final GuiWarpStone parentGui;
     public final String realName;
     public boolean pinned;
+    private final boolean showVillageIcon;
 
     public GuiButtonWaystone(int id, int x, int y, WaystoneEntry waystone, int xpCost, GuiWarpStone parentGui) {
         super(id, x, y, (waystone.isGlobal() ? EnumChatFormatting.YELLOW : "") + waystone.getName());
         this.width = 179;
+        this.showVillageIcon = waystone.isVillage() && AntiqueAtlasCompat.isVillageIconAvailable();
+        // Icon and name together take the space a plain name would
+        int maxNameWidth = this.width - 90 - (showVillageIcon ? AntiqueAtlasCompat.ICON_SIZE + VILLAGE_ICON_GAP : 0);
         String finalName = waystone.getName();
-        while (Minecraft.getMinecraft().fontRenderer.getStringWidth(finalName) > this.width - 90) {
+        while (Minecraft.getMinecraft().fontRenderer.getStringWidth(finalName) > maxNameWidth) {
             finalName = finalName.substring(0, finalName.length() - 1);
         }
         if (finalName.length() != waystone.getName()
@@ -66,7 +73,16 @@ public class GuiButtonWaystone extends GuiButton {
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY) {
         refreshEnabledState();
-        super.drawButton(mc, mouseX, mouseY);
+        if (showVillageIcon) {
+            // GuiButton would center only the name, so draw it here centered together with the icon
+            String label = this.displayString;
+            this.displayString = "";
+            super.drawButton(mc, mouseX, mouseY);
+            this.displayString = label;
+            drawVillageLabel(mc);
+        } else {
+            super.drawButton(mc, mouseX, mouseY);
+        }
 
         if (!parentGui.isFree() && Waystones.getConfig().xpBaseCost > -1
             && !Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode) {
@@ -201,6 +217,33 @@ public class GuiButtonWaystone extends GuiButton {
                 .bindTexture(GuiWarpStone.menuResourceLocation);
             Gui.func_152125_a(crossButtonX, buttonY, 164, 152, 16, 16, sideButtonSize, sideButtonSize, 256.0F, 256.0F);
         }
+    }
+
+    private void drawVillageLabel(Minecraft mc) {
+        int labelWidth = AntiqueAtlasCompat.ICON_SIZE + VILLAGE_ICON_GAP
+            + mc.fontRenderer.getStringWidth(displayString);
+        int iconX = xPosition + (width - labelWidth) / 2;
+
+        // Dimmed like the disabled text color (0xA0 instead of 0xE0)
+        float brightness = enabled ? 1f : 0.7f;
+        GL11.glColor4f(brightness, brightness, brightness, 1f);
+        AntiqueAtlasCompat.drawVillageIcon(iconX, yPosition + 2);
+        GL11.glColor4f(1f, 1f, 1f, 1f);
+
+        // Same colors as GuiButton.drawButton
+        int color = 0xE0E0E0;
+        if (packedFGColour != 0) {
+            color = packedFGColour;
+        } else if (!enabled) {
+            color = 0xA0A0A0;
+        } else if (field_146123_n) {
+            color = 0xFFFFA0;
+        }
+        mc.fontRenderer.drawStringWithShadow(
+            displayString,
+            iconX + AntiqueAtlasCompat.ICON_SIZE + VILLAGE_ICON_GAP,
+            yPosition + (height - 8) / 2,
+            color);
     }
 
     public void refreshEnabledState() {

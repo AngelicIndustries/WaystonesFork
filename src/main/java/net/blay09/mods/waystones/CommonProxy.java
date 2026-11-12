@@ -34,8 +34,7 @@ public class CommonProxy {
             .register(this);
         MinecraftForge.EVENT_BUS.register(this);
 
-        MapGenStructureIO
-            .func_143031_a(VillageWaystone.VillageWaystonePiece.class, Waystones.MODID + ":VillageWaystone");
+        MapGenStructureIO.func_143031_a(VillageWaystone.VillageWaystonePiece.class, VillageWaystone.PIECE_ID);
         MapGenStructureIO
             .func_143031_a(FortressWaystone.FortressWaystonePiece.class, Waystones.MODID + ":FortressWaystone");
     }

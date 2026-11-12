@@ -13,6 +13,7 @@ import net.blay09.mods.waystones.network.message.MessageWaystones;
 import net.blay09.mods.waystones.util.BlockPos;
 import net.blay09.mods.waystones.util.TeleporterNoPortalSeekBlock;
 import net.blay09.mods.waystones.util.WaystoneEntry;
+import net.blay09.mods.waystones.worldgen.VillageWaystone;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -75,6 +76,18 @@ public class WaystoneManager {
     }
 
     public static void activateWaystone(EntityPlayer player, TileWaystone waystone) {
+        if (!waystone.isVillageWaystone()
+            && VillageWaystone.isGeneratedAt(waystone.getWorldObj(), waystone.xCoord, waystone.zCoord)) {
+            waystone.setVillageWaystone(true);
+            WaystoneEntry globalEntry = getServerWaystone(waystone.getWaystoneName());
+            if (globalEntry != null && globalEntry.equals(new WaystoneEntry(waystone))) {
+                globalEntry.setVillage(true);
+                GlobalWaystoneData.save(
+                    MinecraftServer.getServer()
+                        .getEntityWorld());
+            }
+        }
+
         if (waystone.shouldForceGlobalOnActivation() && !waystone.getWaystoneName()
             .isEmpty()) {
             addServerWaystone(new WaystoneEntry(waystone));

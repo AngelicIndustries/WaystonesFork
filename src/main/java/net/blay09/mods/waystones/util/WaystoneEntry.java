@@ -22,6 +22,7 @@ public class WaystoneEntry {
     private final int dimensionId;
     private final BlockPos pos;
     private boolean isGlobal;
+    private boolean isVillage;
 
     public WaystoneEntry(String name, int dimensionId, BlockPos pos) {
         this.name = name;
@@ -33,6 +34,7 @@ public class WaystoneEntry {
         this.name = tileWaystone.getWaystoneName();
         this.dimensionId = tileWaystone.getWorldObj().provider.dimensionId;
         this.pos = new BlockPos(tileWaystone);
+        this.isVillage = tileWaystone.isVillageWaystone();
     }
 
     public String getName() {
@@ -55,21 +57,37 @@ public class WaystoneEntry {
         this.isGlobal = isGlobal;
     }
 
+    public boolean isVillage() {
+        return isVillage;
+    }
+
+    public void setVillage(boolean isVillage) {
+        this.isVillage = isVillage;
+    }
+
     public static WaystoneEntry read(ByteBuf buf) {
-        return new WaystoneEntry(ByteBufUtils.readUTF8String(buf), buf.readInt(), BlockPos.fromLong(buf.readLong()));
+        WaystoneEntry entry = new WaystoneEntry(
+            ByteBufUtils.readUTF8String(buf),
+            buf.readInt(),
+            BlockPos.fromLong(buf.readLong()));
+        entry.setVillage(buf.readBoolean());
+        return entry;
     }
 
     public static WaystoneEntry read(NBTTagCompound tagCompound) {
-        return new WaystoneEntry(
+        WaystoneEntry entry = new WaystoneEntry(
             tagCompound.getString("Name"),
             tagCompound.getInteger("Dimension"),
             BlockPos.fromLong(tagCompound.getLong("Position")));
+        entry.setVillage(tagCompound.getBoolean("Village"));
+        return entry;
     }
 
     public void write(ByteBuf buf) {
         ByteBufUtils.writeUTF8String(buf, name);
         buf.writeInt(dimensionId);
         buf.writeLong(pos.toLong());
+        buf.writeBoolean(isVillage);
     }
 
     public NBTTagCompound writeToNBT() {
@@ -77,6 +95,7 @@ public class WaystoneEntry {
         tagCompound.setString("Name", name);
         tagCompound.setInteger("Dimension", dimensionId);
         tagCompound.setLong("Position", pos.toLong());
+        tagCompound.setBoolean("Village", isVillage);
         return tagCompound;
     }
 

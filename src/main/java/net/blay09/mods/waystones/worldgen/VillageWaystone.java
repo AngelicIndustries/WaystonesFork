@@ -10,10 +10,14 @@ import net.blay09.mods.waystones.compat.VillageNamesCompat;
 import net.blay09.mods.waystones.util.WaystoneEntry;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.MapGenStructureData;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import cpw.mods.fml.common.Loader;
@@ -29,6 +33,36 @@ import cpw.mods.fml.common.registry.VillagerRegistry;
 public class VillageWaystone {
 
     private static final String STRUCTURE_ID = "village";
+    public static final String PIECE_ID = Waystones.MODID + ":VillageWaystone";
+
+    // Untagged waystones from villages generated before tagging existed: look for our piece in the saved village data
+    public static boolean isGeneratedAt(World world, int x, int z) {
+        MapGenStructureData data = (MapGenStructureData) world.perWorldStorage
+            .loadData(MapGenStructureData.class, "Village");
+        if (data == null) {
+            return false;
+        }
+        NBTTagCompound starts = data.func_143041_a();
+        for (Object key : starts.func_150296_c()) {
+            NBTTagCompound start = starts.getCompoundTag((String) key);
+            if (!containsColumn(start.getIntArray("BB"), x, z)) {
+                continue;
+            }
+            NBTTagList children = start.getTagList("Children", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < children.tagCount(); i++) {
+                NBTTagCompound child = children.getCompoundTagAt(i);
+                if (PIECE_ID.equals(child.getString("id")) && containsColumn(child.getIntArray("BB"), x, z)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Ignores Y, saved bounds can predate the piece being moved onto the ground
+    private static boolean containsColumn(int[] bb, int x, int z) {
+        return bb.length == 6 && x >= bb[0] && x <= bb[3] && z >= bb[2] && z <= bb[5];
+    }
 
     public static class VillageWaystonePiece extends StructureVillagePieces.Village {
 
@@ -116,6 +150,7 @@ public class VillageWaystone {
             TileWaystone tile = (TileWaystone) world.getTileEntity(waystoneX, waystoneY, waystoneZ);
 
             if (tile != null && !world.isRemote) {
+                tile.setVillageWaystone(true);
                 String autoName = null;
 
                 if (Waystones.getConfig().villageNamesCompat && Loader.isModLoaded("VillageNames")) {

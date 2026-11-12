@@ -24,6 +24,7 @@ public class TileWaystone extends TileEntity {
     private String waystoneOwner = "";
     private int dummyInventoryVariant = VARIANT_STONE;
     private boolean forceGlobalOnActivation;
+    private boolean villageWaystone;
     private static int warpGeneration = 0;
     private transient int lastSeenWarpGeneration = 0;
     private transient int lastLightValue = -1;
@@ -63,6 +64,7 @@ public class TileWaystone extends TileEntity {
         tagCompound.setString("WaystoneName", waystoneName);
         tagCompound.setString("WaystoneOwner", waystoneOwner);
         tagCompound.setBoolean("ForceGlobalOnActivation", forceGlobalOnActivation);
+        tagCompound.setBoolean("VillageWaystone", villageWaystone);
     }
 
     @Override
@@ -71,6 +73,7 @@ public class TileWaystone extends TileEntity {
         waystoneName = tagCompound.getString("WaystoneName");
         waystoneOwner = tagCompound.getString("WaystoneOwner");
         forceGlobalOnActivation = tagCompound.getBoolean("ForceGlobalOnActivation");
+        villageWaystone = tagCompound.getBoolean("VillageWaystone");
     }
 
     @Override
@@ -140,6 +143,18 @@ public class TileWaystone extends TileEntity {
 
     public void setForceGlobalOnActivation(boolean forceGlobalOnActivation) {
         this.forceGlobalOnActivation = forceGlobalOnActivation;
+        if (worldObj != null) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
+        markDirty();
+    }
+
+    public boolean isVillageWaystone() {
+        return villageWaystone;
+    }
+
+    public void setVillageWaystone(boolean villageWaystone) {
+        this.villageWaystone = villageWaystone;
         if (worldObj != null) {
             worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }

@@ -10,6 +10,7 @@ import net.blay09.mods.waystones.WaystoneConfig;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.block.TileWaystone;
+import net.blay09.mods.waystones.compat.AntiqueAtlasCompat;
 import net.blay09.mods.waystones.network.NetworkHandler;
 import net.blay09.mods.waystones.network.message.MessageUnlearnWaystone;
 import net.blay09.mods.waystones.network.message.MessageWarpStone;
@@ -226,6 +227,16 @@ public class GuiWarpStone extends GuiScreen {
 
             // Switch to 1x scale for buttons
             GL11.glScalef(1.0f / scale, 1.0f / scale, 1.0f / scale);
+
+            // Village icon left of the waystone icon, at 1x so the pixel art stays crisp; shift shows buttons there
+            if (currentWaystone.isVillageWaystone() && !Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)
+                && AntiqueAtlasCompat.isVillageIconAvailable()) {
+                int waystoneIconX = (int) ((-strWidth / 2 - 7) * scale);
+                AntiqueAtlasCompat.drawVillageIcon(waystoneIconX - 4 - AntiqueAtlasCompat.ICON_SIZE, -1);
+                Minecraft.getMinecraft()
+                    .getTextureManager()
+                    .bindTexture(menuResourceLocation);
+            }
 
             // Hover size in 1.5x coord system (matches 16px button at 1x scale)
             int hoverSize = (int) (deleteButtonSize / scale);

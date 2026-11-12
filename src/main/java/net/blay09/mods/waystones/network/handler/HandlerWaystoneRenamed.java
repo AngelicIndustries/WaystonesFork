@@ -62,8 +62,12 @@ public class HandlerWaystoneRenamed implements IMessageHandler<MessageWaystoneRe
                 && known.getPos()
                     .equals(message.getPos())) {
                 WaystoneManager.removeKnownWaystone(message.getOldName());
-                WaystoneManager.addKnownWaystone(
-                    new WaystoneEntry(message.getNewName(), message.getDimensionId(), message.getPos()));
+                WaystoneEntry renamed = new WaystoneEntry(
+                    message.getNewName(),
+                    message.getDimensionId(),
+                    message.getPos());
+                renamed.setVillage(known.isVillage());
+                WaystoneManager.addKnownWaystone(renamed);
             }
 
             // Update server waystones if global
@@ -77,6 +81,7 @@ public class HandlerWaystoneRenamed implements IMessageHandler<MessageWaystoneRe
                     message.getDimensionId(),
                     message.getPos());
                 newEntry.setGlobal(true);
+                newEntry.setVillage(serverEntry.isVillage());
                 WaystoneManager.addServerWaystoneDirectly(newEntry);
             }
 
