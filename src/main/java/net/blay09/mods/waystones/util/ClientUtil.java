@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 
 import net.blay09.mods.waystones.Waystones;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiTextField;
@@ -136,6 +137,13 @@ public class ClientUtil {
 
     public static boolean mouseOverArea(int mouseX, int mouseY, int areaX, int areaY, int areaW, int areaH) {
         return mouseX >= areaX && mouseX <= areaX + areaW && mouseY >= areaY && mouseY <= areaY + areaH;
+    }
+
+    // Same sound vanilla GuiButtons play, for click areas that aren't real buttons
+    public static void playButtonSound() {
+        Minecraft.getMinecraft()
+            .getSoundHandler()
+            .playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
     }
 
     public static void drawBorderedBox(double x, double y, double width, double height, double borderSize,

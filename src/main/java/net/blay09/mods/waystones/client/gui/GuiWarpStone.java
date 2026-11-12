@@ -102,7 +102,17 @@ public class GuiWarpStone extends GuiScreen {
         searchBar.setMaxStringLength(1000);
         searchBar.setText("");
 
-        waystoneList = new WaystoneList(mc, width / 2 - 92, height / 2 - 27, 179, 105, 20, 2, lstEntries, this);
+        // Exactly 5 slots of 20 with 4 gaps of 2, so the last visible entry isn't clipped
+        waystoneList = new WaystoneList(
+            mc,
+            width / 2 - 92,
+            height / 2 - 27,
+            179,
+            5 * 20 + 4 * 2,
+            20,
+            2,
+            lstEntries,
+            this);
 
         this.sortButtonX = waystoneList.x - 25;
         this.sortButtonY = waystoneList.y;
@@ -604,6 +614,7 @@ public class GuiWarpStone extends GuiScreen {
                 this.deleteButtonY,
                 hoverSize,
                 hoverSize)) {
+                ClientUtil.playButtonSound();
                 openRemoveDialog(new WaystoneEntry(currentWaystone), true);
             }
         }
@@ -616,6 +627,7 @@ public class GuiWarpStone extends GuiScreen {
                 hoverSize,
                 hoverSize)) {
                 Waystones.debug("Clicked rename button");
+                ClientUtil.playButtonSound();
                 Minecraft.getMinecraft()
                     .displayGuiScreen(new GuiWaystoneName(currentWaystone, true, this));
             }
@@ -629,6 +641,7 @@ public class GuiWarpStone extends GuiScreen {
             this.sortButtonY,
             this.sortButtonSize,
             this.sortButtonSize)) {
+            ClientUtil.playButtonSound();
             WaystoneConfig.sortingMode = (WaystoneConfig.sortingMode + 1) % 2;
             refreshEntries();
             Configuration config = WaystoneConfig.getRawConfig();
@@ -645,6 +658,7 @@ public class GuiWarpStone extends GuiScreen {
             this.configButtonY,
             this.configButtonSize,
             this.configButtonSize)) {
+            ClientUtil.playButtonSound();
             Minecraft.getMinecraft()
                 .displayGuiScreen(new GuiFactory.ConfigGui(this));
         }

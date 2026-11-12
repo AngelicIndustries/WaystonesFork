@@ -232,11 +232,13 @@ public class GuiButtonWaystone extends GuiButton {
                     return;
                 }
                 Waystones.debug("Clicked on " + waystone.getName() + " cross button");
+                ClientUtil.playButtonSound();
                 parentGui.openRemoveDialog(waystone, false);
                 return;
             }
             if (ClientUtil.mouseOverArea(mouseX, mouseY, pinButtonX, buttonY, sideButtonSize, sideButtonSize)) {
                 Waystones.debug("Clicked on " + waystone.getName() + " pin button");
+                ClientUtil.playButtonSound();
                 this.pinned = !this.pinned;
                 PlayerWaystoneData.setWaystonePinned(Minecraft.getMinecraft().thePlayer, waystone, this.pinned);
                 parentGui.refreshEntries();

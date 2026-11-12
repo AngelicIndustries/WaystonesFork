@@ -96,7 +96,7 @@ public class WaystoneList {
 
         float howMuchCanScroll = getContentHeight() - this.height;
         float scrolledRatio = 0;
-        if (howMuchCanScroll < 0) {
+        if (howMuchCanScroll <= 0) {
             howMuchCanScroll = 0;
         } else {
             scrolledRatio = scrollAmount / howMuchCanScroll;
@@ -174,12 +174,12 @@ public class WaystoneList {
             // scrollAmount += mouseY - startClickY;
             float delta = mouseY - startClickY;
 
+            // Thumb fills the track when nothing can scroll; dividing by 0 would make scrollAmount NaN
             howMuchCanScroll = this.height - thumbHeight;
-            if (howMuchCanScroll < 0) {
-                howMuchCanScroll = 0;
+            if (howMuchCanScroll > 0) {
+                scrolledRatio = delta / howMuchCanScroll;
+                scrollAmount += (getContentHeight() - this.height) * scrolledRatio;
             }
-            scrolledRatio = delta / howMuchCanScroll;
-            scrollAmount += (getContentHeight() - this.height) * scrolledRatio;
 
             clampScroll();
             startClickY = mouseY;
@@ -307,10 +307,10 @@ public class WaystoneList {
         ScaledResolution sr = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 
         int scale = sr.getScaleFactor();
-        int screenHeight = sr.getScaledHeight();
 
         int scissorX = x * scale;
-        int scissorY = (screenHeight - (y + height)) * scale;
+        // glScissor counts from the real window bottom; getScaledHeight() is rounded up and would shift it
+        int scissorY = mc.displayHeight - (y + height) * scale;
         int scissorW = width * scale;
         int scissorH = height * scale;
 
