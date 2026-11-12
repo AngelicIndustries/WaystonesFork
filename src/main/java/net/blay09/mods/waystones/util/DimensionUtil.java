@@ -21,6 +21,9 @@ public class DimensionUtil {
     }
 
     public static String localizeDimName(String name) {
-        return I18n.format("dim.waystones:" + name.replaceAll(" ", ""));
+        String key = "dim.waystones:" + name.replaceAll(" ", "");
+        String localized = I18n.format(key);
+        // Dimensions without a (filled in) lang entry show the provider's own name instead of the key
+        return localized.isEmpty() || localized.equals(key) ? name : localized;
     }
 }
