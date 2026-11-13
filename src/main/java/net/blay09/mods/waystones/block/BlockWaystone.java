@@ -303,6 +303,7 @@ public class BlockWaystone extends BlockContainer {
                     NameGenerator.generate(
                         world,
                         tileWaystone.xCoord,
+                        tileWaystone.yCoord,
                         tileWaystone.zCoord,
                         world.rand,
                         name -> WaystoneManager.isNameTaken(player, name)));

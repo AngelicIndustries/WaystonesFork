@@ -48,6 +48,7 @@ public class GuiWaystoneName extends GuiScreen {
                 oldText = NameGenerator.generate(
                     mc.theWorld,
                     tileWaystone.xCoord,
+                    tileWaystone.yCoord,
                     tileWaystone.zCoord,
                     mc.theWorld.rand,
                     name -> WaystoneManager.isNameTaken(mc.thePlayer, name));

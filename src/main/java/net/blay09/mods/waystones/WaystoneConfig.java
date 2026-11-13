@@ -219,10 +219,11 @@ public class WaystoneConfig {
             "nameBiomeWords",
             Categories.naming,
             NameGenerator.DEFAULT_BIOME_WORDS,
-            "Word added after random names by biome, as <biome dictionary type>=<word>. The first type the biome has "
-                + "is used. Types: HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, "
-                + "NETHER, END, MUSHROOM, MAGICAL, OCEAN, RIVER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, "
-                + "SNOWY, WASTELAND, BEACH. Empty for no biome words.");
+            "Word added after random names by biome, as <biome dictionary type>=<word>, or biomic:<tag>=<word> for "
+                + "Biomic's biome tags (CAVE, FLOATING_ISLAND). The first entry that matches is used. Types: HOT, COLD, "
+                + "SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, NETHER, END, MUSHROOM, "
+                + "MAGICAL, OCEAN, RIVER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH. "
+                + "Empty for no biome words.");
 
         creativeModeOnly = config.getBoolean(
             "creativeModeOnly",
