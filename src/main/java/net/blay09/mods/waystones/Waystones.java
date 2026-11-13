@@ -3,6 +3,7 @@ package net.blay09.mods.waystones;
 import net.blay09.mods.waystones.block.BlockWaystone;
 import net.blay09.mods.waystones.block.ItemBlockWaystone;
 import net.blay09.mods.waystones.block.TileWaystone;
+import net.blay09.mods.waystones.compat.AntiqueAtlasMarkers;
 import net.blay09.mods.waystones.item.ItemReturnScroll;
 import net.blay09.mods.waystones.item.ItemWarpStone;
 import net.blay09.mods.waystones.network.NetworkHandler;
@@ -26,6 +27,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -71,6 +73,7 @@ public class Waystones {
     public static VarInstanceCommon varInstanceCommon = new VarInstanceCommon();
 
     public static boolean hasLwjgl3 = Loader.isModLoaded("lwjgl3ify");
+    public static boolean hasAntiqueAtlas = Loader.isModLoaded("antiqueatlas");
 
     public static boolean DEBUG_MODE;
 
@@ -267,6 +270,13 @@ public class Waystones {
         varInstanceCommon.rebuildCaches();
         if (WaystoneConfig.debugMode) {
             proxy.serverStarting(event);
+        }
+    }
+
+    @Mod.EventHandler
+    public void serverStarted(FMLServerStartedEvent event) {
+        if (hasAntiqueAtlas) {
+            AntiqueAtlasMarkers.syncGlobalMarkers();
         }
     }
 

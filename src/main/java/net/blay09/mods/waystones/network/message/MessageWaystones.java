@@ -16,11 +16,14 @@ public class MessageWaystones implements IMessage {
     private long lastWarpStoneUse;
     private long lastWaystoneUse;
     private String[] pinnedWaystones;
+    private WaystoneEntry[] atlasMarkedWaystones;
+    private boolean canMarkOnAtlas;
 
     public MessageWaystones() {}
 
     public MessageWaystones(WaystoneEntry[] entries, WaystoneEntry[] serverEntries, String lastServerWaystoneName,
-        long lastFreeWarp, long lastWarpStoneUse, long lastWaystoneUse, String[] pinnedWaystones) {
+        long lastFreeWarp, long lastWarpStoneUse, long lastWaystoneUse, String[] pinnedWaystones,
+        WaystoneEntry[] atlasMarkedWaystones, boolean canMarkOnAtlas) {
         this.entries = entries;
         this.serverEntries = serverEntries;
         this.lastFreeWarp = lastFreeWarp;
@@ -28,6 +31,8 @@ public class MessageWaystones implements IMessage {
         this.lastWaystoneUse = lastWaystoneUse;
         this.lastServerWaystoneName = lastServerWaystoneName;
         this.pinnedWaystones = pinnedWaystones;
+        this.atlasMarkedWaystones = atlasMarkedWaystones;
+        this.canMarkOnAtlas = canMarkOnAtlas;
     }
 
     @Override
@@ -49,6 +54,11 @@ public class MessageWaystones implements IMessage {
         for (int i = 0; i < pinnedWaystones.length; i++) {
             pinnedWaystones[i] = ByteBufUtils.readUTF8String(buf);
         }
+        atlasMarkedWaystones = new WaystoneEntry[buf.readInt()];
+        for (int i = 0; i < atlasMarkedWaystones.length; i++) {
+            atlasMarkedWaystones[i] = WaystoneEntry.read(buf);
+        }
+        canMarkOnAtlas = buf.readBoolean();
         // Compare elapsed time on the server with the client's own clock, not absolute timestamps.
         long serverTime = buf.readLong();
         long clientTime = System.currentTimeMillis();
@@ -75,6 +85,11 @@ public class MessageWaystones implements IMessage {
         for (String s : pinnedWaystones) {
             ByteBufUtils.writeUTF8String(buf, s);
         }
+        buf.writeInt(atlasMarkedWaystones.length);
+        for (WaystoneEntry entry : atlasMarkedWaystones) {
+            entry.write(buf);
+        }
+        buf.writeBoolean(canMarkOnAtlas);
         buf.writeLong(System.currentTimeMillis());
     }
 
@@ -104,5 +119,13 @@ public class MessageWaystones implements IMessage {
 
     public String[] getPinnedWaystones() {
         return pinnedWaystones;
+    }
+
+    public WaystoneEntry[] getAtlasMarkedWaystones() {
+        return atlasMarkedWaystones;
+    }
+
+    public boolean canMarkOnAtlas() {
+        return canMarkOnAtlas;
     }
 }

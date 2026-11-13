@@ -66,6 +66,11 @@ public class GuiWarpStone extends GuiScreen {
     public boolean hoveringOverRemoveButtonInList = false;
     public boolean hoveringOverPinButtonInList = false;
     public boolean hoveringOverUnpinButtonInList = false;
+    public String atlasButtonTooltip;
+
+    // Antique Atlas button right of the current waystone's name, at 1x scale
+    private int atlasButtonX;
+    private static final int ATLAS_BUTTON_Y = -1;
 
     public static ResourceLocation menuResourceLocation = new ResourceLocation(
         Waystones.MODID,
@@ -94,6 +99,13 @@ public class GuiWarpStone extends GuiScreen {
         this.isFree = isFree;
         this.source = source;
         lstEntries = new ArrayList<>();
+        AntiqueAtlasCompat.requestAtlasState();
+    }
+
+    private WaystoneEntry getCurrentEntry() {
+        WaystoneEntry entry = new WaystoneEntry(currentWaystone);
+        entry.setGlobal(isGlobal);
+        return entry;
     }
 
     @Override
@@ -192,6 +204,7 @@ public class GuiWarpStone extends GuiScreen {
         hoveringOverRemoveButtonInList = false;
         hoveringOverPinButtonInList = false;
         hoveringOverUnpinButtonInList = false;
+        atlasButtonTooltip = null;
 
         drawWorldBackground(0);
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -233,6 +246,19 @@ public class GuiWarpStone extends GuiScreen {
                 && AntiqueAtlasCompat.isVillageIconAvailable()) {
                 int waystoneIconX = (int) ((-strWidth / 2 - 7) * scale);
                 AntiqueAtlasCompat.drawVillageIcon(waystoneIconX - 4 - AntiqueAtlasCompat.ICON_SIZE, -1);
+                Minecraft.getMinecraft()
+                    .getTextureManager()
+                    .bindTexture(menuResourceLocation);
+            }
+
+            WaystoneEntry currentEntry = getCurrentEntry();
+            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && AntiqueAtlasCompat.canToggleMarker(currentEntry)) {
+                this.atlasButtonX = (int) ((3 + strWidth / 2f) * scale) + 4;
+                boolean hovered = isOverAtlasButton(mouseX, mouseY);
+                if (hovered) {
+                    atlasButtonTooltip = AntiqueAtlasCompat.getMarkerTooltip(currentEntry);
+                }
+                AntiqueAtlasCompat.drawMarkerButton(currentEntry, atlasButtonX, ATLAS_BUTTON_Y, hovered);
                 Minecraft.getMinecraft()
                     .getTextureManager()
                     .bindTexture(menuResourceLocation);
@@ -530,6 +556,13 @@ public class GuiWarpStone extends GuiScreen {
                 mouseY,
                 fontRendererObj);
         }
+        if (atlasButtonTooltip != null) {
+            drawHoveringText(
+                Collections.singletonList(I18n.format(atlasButtonTooltip)),
+                mouseX,
+                mouseY,
+                fontRendererObj);
+        }
         if (hoveringOverRemoveButtonInList) {
             drawHoveringText(
                 Collections.singletonList(I18n.format("gui.waystones:forget")),
@@ -551,6 +584,16 @@ public class GuiWarpStone extends GuiScreen {
                 mouseY,
                 fontRendererObj);
         }
+    }
+
+    private boolean isOverAtlasButton(int mouseX, int mouseY) {
+        return ClientUtil.mouseOverArea(
+            (int) (mouseX - width / 2f),
+            (int) (mouseY - (height / 2f - 110)),
+            atlasButtonX,
+            ATLAS_BUTTON_Y,
+            AntiqueAtlasCompat.MARKER_ICON_WIDTH,
+            AntiqueAtlasCompat.ICON_SIZE);
     }
 
     public boolean isFree() {
@@ -641,6 +684,12 @@ public class GuiWarpStone extends GuiScreen {
                 ClientUtil.playButtonSound();
                 Minecraft.getMinecraft()
                     .displayGuiScreen(new GuiWaystoneName(currentWaystone, true, this));
+            }
+            if (this.source == TeleportSource.WAYSTONE && currentWaystone != null
+                && AntiqueAtlasCompat.canToggleMarker(getCurrentEntry())
+                && isOverAtlasButton(mouseX, mouseY)
+                && AntiqueAtlasCompat.toggleMarker(getCurrentEntry())) {
+                ClientUtil.playButtonSound();
             }
         }
 

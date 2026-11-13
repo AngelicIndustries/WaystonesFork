@@ -4,6 +4,7 @@ import net.blay09.mods.waystones.PlayerWaystoneData;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.block.TileWaystone;
+import net.blay09.mods.waystones.compat.AntiqueAtlasCompat;
 import net.blay09.mods.waystones.network.message.MessageWaystones;
 
 import cpw.mods.fml.client.FMLClientHandler;
@@ -30,6 +31,7 @@ public class HandlerWaystones implements IMessageHandler<MessageWaystones, IMess
                     message.getLastWarpStoneUse(),
                     message.getLastWaystoneUse(),
                     message.getPinnedWaystones());
+                AntiqueAtlasCompat.setAtlasState(message.getAtlasMarkedWaystones(), message.canMarkOnAtlas());
                 TileWaystone.notifyWarpOccurred();
             }
         });

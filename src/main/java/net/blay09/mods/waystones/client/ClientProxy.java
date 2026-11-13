@@ -14,6 +14,7 @@ import net.blay09.mods.waystones.client.gui.GuiWarpStone;
 import net.blay09.mods.waystones.client.gui.GuiWaystoneName;
 import net.blay09.mods.waystones.client.render.RenderWaystone;
 import net.blay09.mods.waystones.client.render.WaystoneBlockRenderer;
+import net.blay09.mods.waystones.compat.AntiqueAtlasMarkers;
 import net.blay09.mods.waystones.mixins.early.minecraft.AccessorGuiScreen;
 import net.blay09.mods.waystones.util.WaystoneEntry;
 import net.minecraft.client.Minecraft;
@@ -57,6 +58,9 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
         Waystones.varInstanceClient.initHook();
+        if (Waystones.hasAntiqueAtlas) {
+            AntiqueAtlasMarkers.registerMarkerTexture();
+        }
     }
 
     @SubscribeEvent

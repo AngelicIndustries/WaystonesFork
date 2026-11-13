@@ -76,6 +76,10 @@ public class WaystoneConfig {
     public String[] nameEndings;
     public String[] nameBiomeWords;
 
+    public boolean antiqueAtlasMarkers;
+    public boolean antiqueAtlasGlobalMarkers;
+    public boolean antiqueAtlasRequireItem;
+
     public enum UnnamedWaystoneNaming {
         PROMPT,
         SUGGEST,
@@ -90,6 +94,7 @@ public class WaystoneConfig {
         public static final String worldgen = "worldgen";
         public static final String xaeroMinimap = "xaerominimap";
         public static final String naming = "naming";
+        public static final String antiqueAtlas = "antiqueatlas";
     }
 
     public void reloadLocal(Configuration config) {
@@ -333,6 +338,22 @@ public class WaystoneConfig {
             Integer.MIN_VALUE,
             Integer.MAX_VALUE,
             "Vertical offset applied to JourneyMap waypoints relative to the Waystone base block.");
+        antiqueAtlasMarkers = config.getBoolean(
+            "antiqueAtlasMarkers",
+            Categories.antiqueAtlas,
+            true,
+            "If true, discovering a Waystone marks it on your Antique Atlases.");
+        antiqueAtlasGlobalMarkers = config.getBoolean(
+            "antiqueAtlasGlobalMarkers",
+            Categories.antiqueAtlas,
+            true,
+            "If true, global Waystones are marked on every Antique Atlas.");
+        antiqueAtlasRequireItem = config.getBoolean(
+            "antiqueAtlasRequireItem",
+            Categories.antiqueAtlas,
+            true,
+            "If true, Waystone markers are only added to or removed from Antique Atlases you carry. "
+                + "If false, also on Antique Atlases you carried before.");
         xaeroMinimapWaypoints = config.getBoolean(
             "xaeroMinimapWaypoints",
             Categories.xaeroMinimap,
@@ -428,6 +449,9 @@ public class WaystoneConfig {
         config.waystoneLightLevel = buf.readFloat();
         config.disableWaystoneDrops = buf.readBoolean();
         config.invulnerableWaystones = buf.readBoolean();
+        config.antiqueAtlasMarkers = buf.readBoolean();
+        config.antiqueAtlasGlobalMarkers = buf.readBoolean();
+        config.antiqueAtlasRequireItem = buf.readBoolean();
         config.sandyWaystonePathBlocks = readStrings(buf);
         config.mossyWaystonePathBlocks = readStrings(buf);
         config.structureWaystoneRules = readStrings(buf);
@@ -462,6 +486,9 @@ public class WaystoneConfig {
         buf.writeFloat(waystoneLightLevel);
         buf.writeBoolean(disableWaystoneDrops);
         buf.writeBoolean(invulnerableWaystones);
+        buf.writeBoolean(antiqueAtlasMarkers);
+        buf.writeBoolean(antiqueAtlasGlobalMarkers);
+        buf.writeBoolean(antiqueAtlasRequireItem);
         writeStrings(buf, sandyWaystonePathBlocks);
         writeStrings(buf, mossyWaystonePathBlocks);
         writeStrings(buf, structureWaystoneRules);

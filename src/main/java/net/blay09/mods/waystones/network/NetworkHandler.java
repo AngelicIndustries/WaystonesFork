@@ -1,12 +1,14 @@
 package net.blay09.mods.waystones.network;
 
 import net.blay09.mods.waystones.Waystones;
+import net.blay09.mods.waystones.network.handler.HandlerAtlasMarker;
 import net.blay09.mods.waystones.network.handler.HandlerConfig;
 import net.blay09.mods.waystones.network.handler.HandlerDimensionNames;
 import net.blay09.mods.waystones.network.handler.HandlerFreeWarpReturn;
 import net.blay09.mods.waystones.network.handler.HandlerJourneyMapWaypoint;
 import net.blay09.mods.waystones.network.handler.HandlerPinWaystone;
 import net.blay09.mods.waystones.network.handler.HandlerRenameWaystone;
+import net.blay09.mods.waystones.network.handler.HandlerRequestWaystones;
 import net.blay09.mods.waystones.network.handler.HandlerTeleportEffect;
 import net.blay09.mods.waystones.network.handler.HandlerUnlearnWaystone;
 import net.blay09.mods.waystones.network.handler.HandlerWarpStone;
@@ -14,11 +16,13 @@ import net.blay09.mods.waystones.network.handler.HandlerWaystoneActivationEffect
 import net.blay09.mods.waystones.network.handler.HandlerWaystoneName;
 import net.blay09.mods.waystones.network.handler.HandlerWaystoneRenamed;
 import net.blay09.mods.waystones.network.handler.HandlerWaystones;
+import net.blay09.mods.waystones.network.message.MessageAtlasMarker;
 import net.blay09.mods.waystones.network.message.MessageConfig;
 import net.blay09.mods.waystones.network.message.MessageDimensionNames;
 import net.blay09.mods.waystones.network.message.MessageJourneyMapWaypoint;
 import net.blay09.mods.waystones.network.message.MessagePinWaystone;
 import net.blay09.mods.waystones.network.message.MessageRenameWaystone;
+import net.blay09.mods.waystones.network.message.MessageRequestWaystones;
 import net.blay09.mods.waystones.network.message.MessageTeleportEffect;
 import net.blay09.mods.waystones.network.message.MessageUnlearnWaystone;
 import net.blay09.mods.waystones.network.message.MessageWarpReturn;
@@ -72,5 +76,11 @@ public class NetworkHandler {
             MessageWaystoneActivationEffect.class,
             discriminator++,
             Side.CLIENT);
+        channel.registerMessage(HandlerAtlasMarker.class, MessageAtlasMarker.class, discriminator++, Side.SERVER);
+        channel.registerMessage(
+            HandlerRequestWaystones.class,
+            MessageRequestWaystones.class,
+            discriminator++,
+            Side.SERVER);
     }
 }

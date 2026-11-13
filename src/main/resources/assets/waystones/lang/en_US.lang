@@ -47,6 +47,10 @@ gui.waystones:rename=Rename Waystone
 gui.waystones:forget=Forget Waystone
 gui.waystones:pin=Pin Waystone
 gui.waystones:unpin=Unpin Waystone
+gui.waystones:atlasAdd=Add to Antique Atlas
+gui.waystones:atlasRemove=Remove from Antique Atlas
+gui.waystones:atlasCarry=Carry an Antique Atlas to mark Waystones
+gui.waystones:atlasNone=You have no Antique Atlas
 
 tooltip.waystones:cooldownLeft=Cooldown: %d seconds
 tooltip.waystones:boundTo=Bound to: %s

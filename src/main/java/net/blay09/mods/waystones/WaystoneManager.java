@@ -1,11 +1,14 @@
 package net.blay09.mods.waystones;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import net.blay09.mods.waystones.block.BlockWaystone;
 import net.blay09.mods.waystones.block.TileWaystone;
+import net.blay09.mods.waystones.compat.AntiqueAtlasMarkers;
 import net.blay09.mods.waystones.network.NetworkHandler;
 import net.blay09.mods.waystones.network.message.MessageJourneyMapWaypoint;
 import net.blay09.mods.waystones.network.message.MessageTeleportEffect;
@@ -124,6 +127,9 @@ public class WaystoneManager {
         boolean playerKnows = playerKnowsAboutWaystone(player, serverWaystone);
         removePlayerWaystone(player, serverWaystone);
         addPlayerWaystone(player, waystone);
+        if (!playerKnows && Waystones.hasAntiqueAtlas && Waystones.getConfig().antiqueAtlasMarkers) {
+            AntiqueAtlasMarkers.mark(player, serverWaystone);
+        }
         sendPlayerWaystones(player);
         sendJourneyMapWaypoint(player, waystone);
         if (!playerKnows) {
@@ -145,6 +151,16 @@ public class WaystoneManager {
     public static void sendPlayerWaystones(EntityPlayer player) {
         if (player instanceof EntityPlayerMP) {
             PlayerWaystoneData waystoneData = PlayerWaystoneData.fromPlayer(player);
+            WaystoneEntry[] atlasMarkedWaystones = new WaystoneEntry[0];
+            boolean canMarkOnAtlas = false;
+            if (Waystones.hasAntiqueAtlas) {
+                List<WaystoneEntry> waystones = new ArrayList<>(Arrays.asList(waystoneData.getWaystones()));
+                waystones.addAll(getServerWaystones());
+                atlasMarkedWaystones = AntiqueAtlasMarkers.getMarkedWaystones(player, waystones)
+                    .toArray(new WaystoneEntry[0]);
+                canMarkOnAtlas = !AntiqueAtlasMarkers.getAtlases(player)
+                    .isEmpty();
+            }
             NetworkHandler.channel.sendTo(
                 new MessageWaystones(
                     waystoneData.getWaystones(),
@@ -153,7 +169,9 @@ public class WaystoneManager {
                     waystoneData.getLastFreeWarp(),
                     waystoneData.getLastWarpStoneUse(),
                     waystoneData.getLastWaystoneUse(),
-                    waystoneData.getPinnedWaystones()),
+                    waystoneData.getPinnedWaystones(),
+                    atlasMarkedWaystones,
+                    canMarkOnAtlas),
                 (EntityPlayerMP) player);
         }
     }
@@ -380,17 +398,27 @@ public class WaystoneManager {
 
     public static void addServerWaystone(WaystoneEntry entry) {
         entry.setGlobal(true);
-        serverWaystones.put(entry.getName(), entry);
+        WaystoneEntry replaced = serverWaystones.put(entry.getName(), entry);
         GlobalWaystoneData.save(
             MinecraftServer.getServer()
                 .getEntityWorld());
+        if (Waystones.hasAntiqueAtlas) {
+            if (replaced != null && !replaced.equals(entry)) {
+                AntiqueAtlasMarkers.unmarkGlobal(replaced);
+            }
+            AntiqueAtlasMarkers.markGlobal(entry);
+        }
     }
 
     public static void removeServerWaystone(WaystoneEntry entry) {
-        serverWaystones.remove(entry.getName());
+        // Removed by name, which can be another waystone than the one passed
+        WaystoneEntry removed = serverWaystones.remove(entry.getName());
         GlobalWaystoneData.save(
             MinecraftServer.getServer()
                 .getEntityWorld());
+        if (removed != null && Waystones.hasAntiqueAtlas) {
+            AntiqueAtlasMarkers.unmarkGlobal(removed);
+        }
     }
 
     public static void setServerWaystones(WaystoneEntry[] entries) {

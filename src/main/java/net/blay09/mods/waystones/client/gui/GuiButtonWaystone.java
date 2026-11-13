@@ -29,6 +29,7 @@ public class GuiButtonWaystone extends GuiButton {
     public int crossButtonX;
     public int buttonY;
     public int pinButtonX;
+    public int atlasButtonX;
 
     private final WaystoneEntry waystone;
     private final int xpCost;
@@ -62,6 +63,7 @@ public class GuiButtonWaystone extends GuiButton {
         crossButtonX = this.xPosition + 2;
         buttonY = this.yPosition + 2;
         pinButtonX = crossButtonX + 18;
+        atlasButtonX = this.xPosition + this.width - 18;
 
         this.pinned = false;
     }
@@ -84,7 +86,13 @@ public class GuiButtonWaystone extends GuiButton {
             super.drawButton(mc, mouseX, mouseY);
         }
 
-        if (!parentGui.isFree() && Waystones.getConfig().xpBaseCost > -1
+        boolean shiftHovered = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)
+            && ClientUtil.mouseOverArea(mouseX, mouseY, this.xPosition, this.yPosition, this.width, this.height);
+        // The Antique Atlas button takes the place of the XP cost while shift is held
+        boolean showAtlasButton = shiftHovered && AntiqueAtlasCompat.canToggleMarker(waystone);
+
+        if (!showAtlasButton && !parentGui.isFree()
+            && Waystones.getConfig().xpBaseCost > -1
             && !Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode) {
             // Cost
             int color = (Minecraft.getMinecraft().thePlayer.experienceLevel >= xpCost) ? 0x36A336 : 0xFF5555;// 0x55FF55
@@ -108,6 +116,7 @@ public class GuiButtonWaystone extends GuiButton {
         buttonY = this.yPosition + 2;
         crossButtonX = this.xPosition + 2;
         pinButtonX = crossButtonX + 18;
+        atlasButtonX = this.xPosition + this.width - 18;
 
         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)
             && ClientUtil.mouseOverArea(mouseX, mouseY, this.xPosition, this.yPosition, this.width, this.height)) {
@@ -209,6 +218,19 @@ public class GuiButtonWaystone extends GuiButton {
             }
         }
 
+        if (showAtlasButton) {
+            boolean hovered = ClientUtil
+                .mouseOverArea(mouseX, mouseY, atlasButtonX, buttonY, sideButtonSize, sideButtonSize);
+            if (hovered) {
+                parentGui.atlasButtonTooltip = AntiqueAtlasCompat.getMarkerTooltip(waystone);
+            }
+            AntiqueAtlasCompat.drawMarkerButton(
+                waystone,
+                atlasButtonX + (sideButtonSize - AntiqueAtlasCompat.MARKER_ICON_WIDTH) / 2,
+                buttonY,
+                hovered);
+        }
+
         if (!(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)
             && ClientUtil.mouseOverArea(mouseX, mouseY, this.xPosition, this.yPosition, this.width, this.height))
             && this.pinned) {
@@ -286,6 +308,13 @@ public class GuiButtonWaystone extends GuiButton {
                 PlayerWaystoneData.setWaystonePinned(Minecraft.getMinecraft().thePlayer, waystone, this.pinned);
                 parentGui.refreshEntries();
                 NetworkHandler.channel.sendToServer(new MessagePinWaystone(this.realName, this.pinned));
+                return;
+            }
+            if (AntiqueAtlasCompat.canToggleMarker(waystone)
+                && ClientUtil.mouseOverArea(mouseX, mouseY, atlasButtonX, buttonY, sideButtonSize, sideButtonSize)) {
+                if (AntiqueAtlasCompat.toggleMarker(waystone)) {
+                    ClientUtil.playButtonSound();
+                }
                 return;
             }
         }

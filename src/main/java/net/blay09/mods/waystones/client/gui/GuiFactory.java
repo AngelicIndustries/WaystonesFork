@@ -59,6 +59,9 @@ public class GuiFactory implements IModGuiFactory {
                             .getCategory(WaystoneConfig.Categories.xaeroMinimap)),
                     new ConfigElement(
                         WaystoneConfig.getRawConfig()
+                            .getCategory(WaystoneConfig.Categories.antiqueAtlas)),
+                    new ConfigElement(
+                        WaystoneConfig.getRawConfig()
                             .getCategory(WaystoneConfig.Categories.client))),
                 Waystones.MODID,
                 Waystones.MODID,

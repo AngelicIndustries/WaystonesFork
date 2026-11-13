@@ -4,6 +4,7 @@ import net.blay09.mods.waystones.PlayerWaystoneData;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.block.TileWaystone;
+import net.blay09.mods.waystones.compat.AntiqueAtlasMarkers;
 import net.blay09.mods.waystones.network.NetworkHandler;
 import net.blay09.mods.waystones.network.message.MessageRenameWaystone;
 import net.blay09.mods.waystones.network.message.MessageWaystoneRenamed;
@@ -76,6 +77,14 @@ public class HandlerRenameWaystone implements IMessageHandler<MessageRenameWayst
 
             if (wasGlobal) {
                 WaystoneManager.addServerWaystone(new WaystoneEntry(waystone));
+            }
+
+            if (Waystones.hasAntiqueAtlas) {
+                WaystoneEntry renamed = new WaystoneEntry(waystone);
+                for (EntityPlayerMP obj : MinecraftServer.getServer()
+                    .getConfigurationManager().playerEntityList) {
+                    AntiqueAtlasMarkers.relabel(obj, renamed);
+                }
             }
 
             MessageWaystoneRenamed renameMsg = new MessageWaystoneRenamed(
