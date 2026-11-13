@@ -165,7 +165,7 @@ public class Waystones {
                     "SWS",
                     "OOO",
                     'S',
-                    Blocks.stonebrick,
+                    Blocks.stone,
                     'W',
                     itemWarpStone,
                     'O',

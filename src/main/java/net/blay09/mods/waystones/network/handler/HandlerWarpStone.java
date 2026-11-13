@@ -52,6 +52,7 @@ public class HandlerWarpStone implements IMessageHandler<MessageWarpStone, IMess
             }
 
             // XP cost and cooldown enforcement
+            int xpCost = 0;
             if (!message.isFree() && !player.capabilities.isCreativeMode) {
                 boolean canWarp = source != null ? PlayerWaystoneData.canUseWaystone(player, target)
                     : PlayerWaystoneData.canUseWarpStone(player, target);
@@ -61,19 +62,21 @@ public class HandlerWarpStone implements IMessageHandler<MessageWarpStone, IMess
                 }
 
                 if (Waystones.getConfig().xpBaseCost > -1) {
-                    int cost = WaystoneXpCost.getXpCost(player, target);
+                    // Measured before teleporting, the distance changes once the player arrives
+                    xpCost = WaystoneXpCost.getXpCost(player, target);
 
-                    if (player.experienceLevel < cost) {
-                        player.addChatMessage(new ChatComponentTranslation("gui.waystones:notEnoughXp", cost));
+                    if (player.experienceLevel < xpCost) {
+                        player.addChatMessage(new ChatComponentTranslation("gui.waystones:notEnoughXp", xpCost));
                         return;
                     }
-
-                    player.addExperienceLevel(-cost);
                 }
             }
 
-            // Teleport
+            // Teleport, charging XP only if it went through
             if (WaystoneManager.teleportToWaystone(player, target)) {
+                if (xpCost > 0) {
+                    player.addExperienceLevel(-xpCost);
+                }
                 if (!player.capabilities.isCreativeMode) {
                     if (message.isFree()) {
                         PlayerWaystoneData.setLastFreeWarp(player, System.currentTimeMillis());

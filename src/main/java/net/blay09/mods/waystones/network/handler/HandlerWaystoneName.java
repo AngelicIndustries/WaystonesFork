@@ -56,7 +56,7 @@ public class HandlerWaystoneName implements IMessageHandler<MessageWaystoneName,
                         ((TileWaystone) tileEntity).setWaystoneOwner(
                             entityPlayer.getUniqueID()
                                 .toString());
-                    if (message.isGlobal() /* && ctx.getServerHandler().playerEntity.capabilities.isCreativeMode */) {
+                    if (message.isGlobal() && entityPlayer.capabilities.isCreativeMode) {
                         WaystoneManager.addServerWaystone(new WaystoneEntry((TileWaystone) tileEntity));
                         for (EntityPlayer obj : MinecraftServer.getServer()
                             .getConfigurationManager().playerEntityList) {

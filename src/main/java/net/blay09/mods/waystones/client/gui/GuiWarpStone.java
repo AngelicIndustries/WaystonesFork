@@ -656,7 +656,7 @@ public class GuiWarpStone extends GuiScreen {
             WaystoneConfig.sortingMode = (WaystoneConfig.sortingMode + 1) % 2;
             refreshEntries();
             Configuration config = WaystoneConfig.getRawConfig();
-            config.get(WaystoneConfig.Categories.client, "Sorting mode", 0)
+            config.get(WaystoneConfig.Categories.client, "sortingMode", 0)
                 .set(WaystoneConfig.sortingMode);
             config.save();
         }
