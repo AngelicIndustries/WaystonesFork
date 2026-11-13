@@ -2,11 +2,13 @@ package net.blay09.mods.waystones.client.gui;
 
 import net.blay09.mods.waystones.WaystoneConfig;
 import net.blay09.mods.waystones.WaystoneManager;
+import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.block.TileWaystone;
 import net.blay09.mods.waystones.network.NetworkHandler;
 import net.blay09.mods.waystones.network.message.MessageRenameWaystone;
 import net.blay09.mods.waystones.network.message.MessageWaystoneName;
 import net.blay09.mods.waystones.util.BlockPos;
+import net.blay09.mods.waystones.util.NameGenerator;
 import net.blay09.mods.waystones.util.WaystoneEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -38,12 +40,27 @@ public class GuiWaystoneName extends GuiScreen {
     @Override
     public void initGui() {
         String oldText = tileWaystone.getWaystoneName();
+        boolean suggested = false;
         if (textField != null) {
             oldText = textField.getText();
-        }
+        } else if (oldText.isEmpty() && !renaming
+            && Waystones.getConfig().unnamedWaystoneNaming != WaystoneConfig.UnnamedWaystoneNaming.PROMPT) {
+                oldText = NameGenerator.generate(
+                    mc.theWorld,
+                    tileWaystone.xCoord,
+                    tileWaystone.zCoord,
+                    mc.theWorld.rand,
+                    name -> WaystoneManager.isNameTaken(mc.thePlayer, name));
+                suggested = true;
+            }
         textField = new GuiTextField(fontRendererObj, width / 2 - 100, height / 2 - 20, 200, 20);
         textField.setText(oldText);
         textField.setFocused(true);
+        if (suggested) {
+            // Selected, so typing replaces the suggestion and Done keeps it
+            textField.setCursorPositionEnd();
+            textField.setSelectionPos(0);
+        }
         chkGlobal = new GuiCheckBox(
             1,
             width / 2 - 100,
@@ -55,10 +72,10 @@ public class GuiWaystoneName extends GuiScreen {
         btnCancel = new GuiButton(2, width / 2 - 102, height / 2 + 25, 100, 20, I18n.format("gui.cancel"));
         buttonList.add(btnCancel);
         btnDone = new GuiButton(0, width / 2 + 2, height / 2 + 25, 100, 20, I18n.format("gui.done"));
-        btnDone.enabled = false;
         buttonList.add(btnDone);
 
         buttonList.add(chkGlobal);
+        updateDoneButton();
 
         Keyboard.enableRepeatEvents(true);
     }
@@ -95,10 +112,7 @@ public class GuiWaystoneName extends GuiScreen {
             }
         } else if (button == chkGlobal) {
             // Re-check the duplicate name whenever the checkbox is toggled
-            String newName = textField.getText()
-                .trim();
-            boolean duplicate = isNameDuplicate(newName, chkGlobal.isChecked());
-            btnDone.enabled = !newName.isEmpty() && !duplicate;
+            updateDoneButton();
         }
     }
 
@@ -118,12 +132,13 @@ public class GuiWaystoneName extends GuiScreen {
         }
         super.keyTyped(typedChar, keyCode);
         textField.textboxKeyTyped(typedChar, keyCode);
+        updateDoneButton();
+    }
 
-        // Check duplicates and enable/disable Done button
+    private void updateDoneButton() {
         String newName = textField.getText()
             .trim();
-        boolean duplicate = isNameDuplicate(newName, chkGlobal.isChecked());
-        btnDone.enabled = !newName.isEmpty() && !duplicate;
+        btnDone.enabled = !newName.isEmpty() && !isNameDuplicate(newName, chkGlobal.isChecked());
     }
 
     @Override

@@ -25,6 +25,7 @@ public class TileWaystone extends TileEntity {
     private int dummyInventoryVariant = VARIANT_STONE;
     private boolean forceGlobalOnActivation;
     private boolean villageWaystone;
+    private boolean placedByPlayer;
     private static int warpGeneration = 0;
     private transient int lastSeenWarpGeneration = 0;
     private transient int lastLightValue = -1;
@@ -65,6 +66,7 @@ public class TileWaystone extends TileEntity {
         tagCompound.setString("WaystoneOwner", waystoneOwner);
         tagCompound.setBoolean("ForceGlobalOnActivation", forceGlobalOnActivation);
         tagCompound.setBoolean("VillageWaystone", villageWaystone);
+        tagCompound.setBoolean("PlacedByPlayer", placedByPlayer);
     }
 
     @Override
@@ -74,6 +76,7 @@ public class TileWaystone extends TileEntity {
         waystoneOwner = tagCompound.getString("WaystoneOwner");
         forceGlobalOnActivation = tagCompound.getBoolean("ForceGlobalOnActivation");
         villageWaystone = tagCompound.getBoolean("VillageWaystone");
+        placedByPlayer = tagCompound.getBoolean("PlacedByPlayer");
     }
 
     @Override
@@ -155,6 +158,19 @@ public class TileWaystone extends TileEntity {
 
     public void setVillageWaystone(boolean villageWaystone) {
         this.villageWaystone = villageWaystone;
+        if (worldObj != null) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
+        markDirty();
+    }
+
+    // Waystones placed before this existed count as world-generated, only matters while they are unnamed
+    public boolean isPlacedByPlayer() {
+        return placedByPlayer;
+    }
+
+    public void setPlacedByPlayer(boolean placedByPlayer) {
+        this.placedByPlayer = placedByPlayer;
         if (worldObj != null) {
             worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }

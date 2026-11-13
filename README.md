@@ -41,6 +41,7 @@ Teleport back to activated waystones. For Survival, Adventure or Servers.
 * Waystone list filtering.
 * "Undiscovering/Forgetting" Waystones.
 * Waystone renaming.
+* Generated names for unnamed Waystones: suggested in the naming box, or assigned automatically to world-generated ones. Configurable name generator.
 * Pinned Waystones which appear at the top of the list.
 * Global Waystones are stored in the save NBT, no more conflicts.
 * Sandstone, Mossy, (Mossy) Stonebrick, Netherbrick, Endstone Waystone variants.

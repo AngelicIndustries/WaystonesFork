@@ -8,6 +8,7 @@ import net.blay09.mods.waystones.WaystoneConfig;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.client.gui.GuiWarpStone;
+import net.blay09.mods.waystones.util.NameGenerator;
 import net.blay09.mods.waystones.util.WaystoneEntry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
@@ -188,6 +189,9 @@ public class BlockWaystone extends BlockContainer {
         world.setBlockMetadataWithNotify(x, y, z, orientation, 1 | 2);
         world.setBlock(x, y + 1, z, this, ForgeDirection.UNKNOWN.ordinal(), 1 | 2);
         TileWaystone tileWaystone = getTileWaystone(world, x, y, z);
+        if (tileWaystone != null && !world.isRemote) {
+            tileWaystone.setPlacedByPlayer(true);
+        }
         if (tileWaystone != null && world.isRemote
             && entityLiving instanceof EntityPlayer
             && (!Waystones.getConfig().creativeModeOnly || ((EntityPlayer) entityLiving).capabilities.isCreativeMode)) {
@@ -215,6 +219,12 @@ public class BlockWaystone extends BlockContainer {
         } else if (isWaystoneBlock(world.getBlock(x, y - 1, z))) {
             world.setBlockToAir(x, y - 1, z);
         }
+    }
+
+    // Unnamed world-generated waystones in auto mode get a name instead of asking for one
+    private static boolean isNamedOnActivation(TileWaystone tileWaystone) {
+        return Waystones.getConfig().unnamedWaystoneNaming == WaystoneConfig.UnnamedWaystoneNaming.AUTO
+            && !tileWaystone.isPlacedByPlayer();
     }
 
     public static void clientActivationEffects(World world, int x, int y, int z) {
@@ -266,26 +276,36 @@ public class BlockWaystone extends BlockContainer {
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX,
         float hitY, float hitZ) {
         TileWaystone tileWaystone = getTileWaystone(world, x, y, z);
-        if (world.isRemote && tileWaystone.getWaystoneName()
-            .isEmpty()) {
-            Waystones.proxy.openWaystoneNameEdit(tileWaystone);
+        if (tileWaystone == null) {
+            return true;
+        }
+        boolean unnamed = tileWaystone.getWaystoneName()
+            .isEmpty();
+        if (world.isRemote && unnamed) {
+            if (!isNamedOnActivation(tileWaystone)) {
+                Waystones.proxy.openWaystoneNameEdit(tileWaystone);
+            }
             return true;
         }
         if (world.isRemote) {
             if ((player.isSneaking() || WaystoneManager.playerActivatedWaystone(player, tileWaystone))
                 && (player.capabilities.isCreativeMode || !Waystones.getConfig().creativeModeOnly)) {
-
-                if (tileWaystone == null) {
-                    return true;
-                }
                 Waystones.proxy.openWaystoneSelection(tileWaystone, false, GuiWarpStone.TeleportSource.WAYSTONE);
             }
             return true;
         }
         if (!world.isRemote) {
-            if (tileWaystone == null || tileWaystone.getWaystoneName()
-                .isEmpty()) {
-                return true;
+            if (unnamed) {
+                if (!isNamedOnActivation(tileWaystone)) {
+                    return true;
+                }
+                tileWaystone.setWaystoneName(
+                    NameGenerator.generate(
+                        world,
+                        tileWaystone.xCoord,
+                        tileWaystone.zCoord,
+                        world.rand,
+                        name -> WaystoneManager.isNameTaken(player, name)));
             }
             WaystoneManager.activateWaystone(player, tileWaystone);
 

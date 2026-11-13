@@ -59,6 +59,21 @@ public class WaystoneManager {
         return false;
     }
 
+    // Works on both sides: the client keeps its own copy of the player's waystones and the global ones
+    public static boolean isNameTaken(EntityPlayer player, String name) {
+        if (getServerWaystone(name) != null) {
+            return true;
+        }
+        for (WaystoneEntry entry : PlayerWaystoneData.fromPlayer(player)
+            .getWaystones()) {
+            if (entry.getName()
+                .equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean playerKnowsAboutWaystone(EntityPlayer player, WaystoneEntry waystoneEntry) {
         if (waystoneEntry.isGlobal()) {
             return true;

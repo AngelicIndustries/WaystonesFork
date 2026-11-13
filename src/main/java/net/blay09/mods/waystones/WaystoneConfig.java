@@ -1,5 +1,6 @@
 package net.blay09.mods.waystones;
 
+import net.blay09.mods.waystones.util.NameGenerator;
 import net.minecraftforge.common.config.Configuration;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -68,6 +69,19 @@ public class WaystoneConfig {
     public String[] mossyWaystonePathBlocks;
     public String[] structureWaystoneRules;
 
+    public UnnamedWaystoneNaming unnamedWaystoneNaming;
+    public String[] customWaystoneNames;
+    public String[] nameBeginnings;
+    public String[] nameMiddles;
+    public String[] nameEndings;
+    public String[] nameBiomeWords;
+
+    public enum UnnamedWaystoneNaming {
+        PROMPT,
+        SUGGEST,
+        AUTO
+    }
+
     public static class Categories {
 
         public static final String general = "general";
@@ -75,6 +89,7 @@ public class WaystoneConfig {
         public static final String journeyMap = "journeymap";
         public static final String worldgen = "worldgen";
         public static final String xaeroMinimap = "xaerominimap";
+        public static final String naming = "naming";
     }
 
     public void reloadLocal(Configuration config) {
@@ -165,6 +180,44 @@ public class WaystoneConfig {
             Categories.general,
             false,
             "If true, a waystone is invulnerable to all but the player who named them.");
+
+        unnamedWaystoneNaming = parseUnnamedWaystoneNaming(
+            config.getString(
+                "unnamedWaystoneNaming",
+                Categories.naming,
+                "suggest",
+                "How unnamed waystones get their name. prompt: the name box starts empty. "
+                    + "suggest: the name box is pre-filled with a generated name, start typing to replace it. "
+                    + "auto: like suggest, but world-generated waystones are named automatically when right-clicked.",
+                new String[] { "prompt", "suggest", "auto" }));
+        customWaystoneNames = config.getStringList(
+            "customWaystoneNames",
+            Categories.naming,
+            new String[0],
+            "Names used for generated waystone names before random ones, skipping names already taken.");
+        nameBeginnings = config.getStringList(
+            "nameBeginnings",
+            Categories.naming,
+            NameGenerator.DEFAULT_BEGINNINGS,
+            "First part of random waystone names. A random name is one beginning, middle and ending.");
+        nameMiddles = config.getStringList(
+            "nameMiddles",
+            Categories.naming,
+            NameGenerator.DEFAULT_MIDDLES,
+            "Middle part of random waystone names.");
+        nameEndings = config.getStringList(
+            "nameEndings",
+            Categories.naming,
+            NameGenerator.DEFAULT_ENDINGS,
+            "Last part of random waystone names.");
+        nameBiomeWords = config.getStringList(
+            "nameBiomeWords",
+            Categories.naming,
+            NameGenerator.DEFAULT_BIOME_WORDS,
+            "Word added after random names by biome, as <biome dictionary type>=<word>. The first type the biome has "
+                + "is used. Types: HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, "
+                + "NETHER, END, MUSHROOM, MAGICAL, OCEAN, RIVER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, "
+                + "SNOWY, WASTELAND, BEACH. Empty for no biome words.");
 
         creativeModeOnly = config.getBoolean(
             "creativeModeOnly",
@@ -342,6 +395,16 @@ public class WaystoneConfig {
                 + "dimensionWhitelist=<*|0,-1,1>;biomeWhitelist=<*|2,17,21>");
     }
 
+    private static UnnamedWaystoneNaming parseUnnamedWaystoneNaming(String value) {
+        for (UnnamedWaystoneNaming naming : UnnamedWaystoneNaming.values()) {
+            if (naming.name()
+                .equalsIgnoreCase(value)) {
+                return naming;
+            }
+        }
+        return UnnamedWaystoneNaming.SUGGEST;
+    }
+
     public static WaystoneConfig read(ByteBuf buf) {
         WaystoneConfig config = new WaystoneConfig();
         config.teleportButton = buf.readBoolean();
@@ -365,21 +428,15 @@ public class WaystoneConfig {
         config.waystoneLightLevel = buf.readFloat();
         config.disableWaystoneDrops = buf.readBoolean();
         config.invulnerableWaystones = buf.readBoolean();
-        int sandyPathBlockCount = buf.readInt();
-        config.sandyWaystonePathBlocks = new String[sandyPathBlockCount];
-        for (int i = 0; i < sandyPathBlockCount; i++) {
-            config.sandyWaystonePathBlocks[i] = ByteBufUtils.readUTF8String(buf);
-        }
-        int mossyPathBlockCount = buf.readInt();
-        config.mossyWaystonePathBlocks = new String[mossyPathBlockCount];
-        for (int i = 0; i < mossyPathBlockCount; i++) {
-            config.mossyWaystonePathBlocks[i] = ByteBufUtils.readUTF8String(buf);
-        }
-        int structureRuleCount = buf.readInt();
-        config.structureWaystoneRules = new String[structureRuleCount];
-        for (int i = 0; i < structureRuleCount; i++) {
-            config.structureWaystoneRules[i] = ByteBufUtils.readUTF8String(buf);
-        }
+        config.sandyWaystonePathBlocks = readStrings(buf);
+        config.mossyWaystonePathBlocks = readStrings(buf);
+        config.structureWaystoneRules = readStrings(buf);
+        config.unnamedWaystoneNaming = UnnamedWaystoneNaming.values()[buf.readByte()];
+        config.customWaystoneNames = readStrings(buf);
+        config.nameBeginnings = readStrings(buf);
+        config.nameMiddles = readStrings(buf);
+        config.nameEndings = readStrings(buf);
+        config.nameBiomeWords = readStrings(buf);
         return config;
     }
 
@@ -405,20 +462,32 @@ public class WaystoneConfig {
         buf.writeFloat(waystoneLightLevel);
         buf.writeBoolean(disableWaystoneDrops);
         buf.writeBoolean(invulnerableWaystones);
-        String[] sandyBlocks = sandyWaystonePathBlocks != null ? sandyWaystonePathBlocks : new String[0];
-        buf.writeInt(sandyBlocks.length);
-        for (String sandyPathBlock : sandyBlocks) {
-            ByteBufUtils.writeUTF8String(buf, sandyPathBlock);
+        writeStrings(buf, sandyWaystonePathBlocks);
+        writeStrings(buf, mossyWaystonePathBlocks);
+        writeStrings(buf, structureWaystoneRules);
+        buf.writeByte(unnamedWaystoneNaming.ordinal());
+        writeStrings(buf, customWaystoneNames);
+        writeStrings(buf, nameBeginnings);
+        writeStrings(buf, nameMiddles);
+        writeStrings(buf, nameEndings);
+        writeStrings(buf, nameBiomeWords);
+    }
+
+    private static String[] readStrings(ByteBuf buf) {
+        String[] strings = new String[buf.readInt()];
+        for (int i = 0; i < strings.length; i++) {
+            strings[i] = ByteBufUtils.readUTF8String(buf);
         }
-        String[] mossyBlocks = mossyWaystonePathBlocks != null ? mossyWaystonePathBlocks : new String[0];
-        buf.writeInt(mossyBlocks.length);
-        for (String mossyPathBlock : mossyBlocks) {
-            ByteBufUtils.writeUTF8String(buf, mossyPathBlock);
+        return strings;
+    }
+
+    private static void writeStrings(ByteBuf buf, String[] strings) {
+        if (strings == null) {
+            strings = new String[0];
         }
-        String[] structureRules = structureWaystoneRules != null ? structureWaystoneRules : new String[0];
-        buf.writeInt(structureRules.length);
-        for (String structureRule : structureRules) {
-            ByteBufUtils.writeUTF8String(buf, structureRule);
+        buf.writeInt(strings.length);
+        for (String string : strings) {
+            ByteBufUtils.writeUTF8String(buf, string);
         }
     }
 
