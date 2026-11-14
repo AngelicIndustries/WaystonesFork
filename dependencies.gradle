@@ -46,6 +46,7 @@ dependencies {
     runtimeOnlyNonPublishable(rfg.deobf("curse.maven:catalogue-vintage-1465746:8384975")) // 1.0.8-1.7.10
     devOnlyNonPublishable("com.github.GTNewHorizons:AntiqueAtlas:4.4.6-GTNH:dev")
     compileOnly("industries.angelic.biomic:Biomic:670f20e-snapshot:dev") { transitive = false }
+    compileOnly("com.github.GTNewHorizons:Backhand:1.9.0:dev") { transitive = false }
 
     // implementation "mcp.mobius.waila:Waila:1.5.10_1.7.10"
     // implementation(rfg.deobf("maven.modrinth:village-names:dbqnvxNP"))

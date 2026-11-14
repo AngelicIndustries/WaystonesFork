@@ -4,6 +4,7 @@ import net.blay09.mods.waystones.PlayerWaystoneData;
 import net.blay09.mods.waystones.WaystoneManager;
 import net.blay09.mods.waystones.Waystones;
 import net.blay09.mods.waystones.block.TileWaystone;
+import net.blay09.mods.waystones.compat.BackhandCompat;
 import net.blay09.mods.waystones.network.message.MessageWarpStone;
 import net.blay09.mods.waystones.util.BlockPos;
 import net.blay09.mods.waystones.util.WaystoneEntry;
@@ -31,11 +32,8 @@ public class HandlerWarpStone implements IMessageHandler<MessageWarpStone, IMess
                 if (message.isFree() || !isValidWaystoneSource(player, source)) {
                     return;
                 }
-            } else if (!message.isFree()) {
-                ItemStack heldItem = player.getHeldItem();
-                if (heldItem == null || heldItem.getItem() != Waystones.itemWarpStone) {
-                    return;
-                }
+            } else if (!message.isFree() && !isHoldingWarpStone(player)) {
+                return;
             }
 
             // Free warp validation
@@ -94,6 +92,15 @@ public class HandlerWarpStone implements IMessageHandler<MessageWarpStone, IMess
             WaystoneManager.sendPlayerWaystones(player);
         });
         return null;
+    }
+
+    private static boolean isHoldingWarpStone(EntityPlayerMP player) {
+        return isWarpStone(player.getHeldItem())
+            || Waystones.hasBackhand && isWarpStone(BackhandCompat.getOffhandItem(player));
+    }
+
+    private static boolean isWarpStone(ItemStack itemStack) {
+        return itemStack != null && itemStack.getItem() == Waystones.itemWarpStone;
     }
 
     private boolean isValidWaystoneSource(EntityPlayerMP player, WaystoneEntry source) {

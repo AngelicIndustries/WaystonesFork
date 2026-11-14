@@ -75,6 +75,7 @@ public class Waystones {
     public static boolean hasLwjgl3 = Loader.isModLoaded("lwjgl3ify");
     public static boolean hasAntiqueAtlas = Loader.isModLoaded("antiqueatlas");
     public static boolean hasBiomic = Loader.isModLoaded("biomic");
+    public static boolean hasBackhand = Loader.isModLoaded("backhand");
 
     public static boolean DEBUG_MODE;
 
