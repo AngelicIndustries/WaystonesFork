@@ -31,10 +31,15 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.mitchej123.supernova.api.PackedColorLight;
+import com.mitchej123.supernova.api.PositionalColoredLightSource;
+
+import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class BlockWaystone extends BlockContainer {
+@Optional.Interface(iface = "com.mitchej123.supernova.api.PositionalColoredLightSource", modid = "supernova")
+public class BlockWaystone extends BlockContainer implements PositionalColoredLightSource {
 
     private final int defaultVariant;
     private final String iconName;
@@ -117,6 +122,39 @@ public class BlockWaystone extends BlockContainer {
             }
         }
         return (int) (maxLight * 15f);
+    }
+
+    // Supernova colored light: the color of the variant's glow, at the waystone's current light level.
+    // Nether is the lava texture's average color, End Supernova's own end portal color.
+    @Override
+    @Optional.Method(modid = "supernova")
+    public int getColoredLightEmission(IBlockAccess world, int meta, int x, int y, int z) {
+        return getColoredLight(getLightValue(world, x, y, z));
+    }
+
+    @Override
+    @Optional.Method(modid = "supernova")
+    public int getColoredLightEmission(int meta) {
+        return getColoredLight((int) (Waystones.getConfig().waystoneLightLevel * 15f));
+    }
+
+    @Optional.Method(modid = "supernova")
+    private int getColoredLight(int level) {
+        int color;
+        switch (defaultVariant) {
+            case TileWaystone.VARIANT_NETHER:
+                color = PackedColorLight.pack(15, 6, 1);
+                break;
+            case TileWaystone.VARIANT_END:
+                color = PackedColorLight.pack(7, 15, 11);
+                break;
+            default:
+                color = PackedColorLight.pack(15, 15, 15);
+        }
+        return PackedColorLight.pack(
+            Math.round(PackedColorLight.red(color) * level / 15f),
+            Math.round(PackedColorLight.green(color) * level / 15f),
+            Math.round(PackedColorLight.blue(color) * level / 15f));
     }
 
     @Override
