@@ -12,6 +12,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.EnumChatFormatting;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -193,8 +194,18 @@ public class WaystoneList {
         int index = getHoveredButton(mouseX, mouseY);
         if (index > -1) {
             int bakColor = ClientUtil.backupGLColor();
-            WaystoneEntry entry = this.entries.get(index)
-                .getWaystone();
+            GuiButtonWaystone button = this.entries.get(index);
+            WaystoneEntry entry = button.getWaystone();
+            int infoY = this.y + this.height + 15;
+            if (button.nameShortened) {
+                this.parentGui.drawCenteredString(
+                    mc.fontRenderer,
+                    (entry.isGlobal() ? EnumChatFormatting.YELLOW : "") + entry.getName(),
+                    this.x + this.width / 2,
+                    infoY,
+                    0xFFFFFF);
+                infoY += mc.fontRenderer.FONT_HEIGHT + 1;
+            }
             if (entry.getDimensionId() == Minecraft.getMinecraft().thePlayer.getEntityWorld().provider.dimensionId) {
                 int distance = (int) Math.sqrt(
                     Math.pow(
@@ -221,14 +232,14 @@ public class WaystoneList {
                         entry.getPos()
                             .getZ()),
                     this.x + this.width / 2,
-                    this.y + this.height + 15,
+                    infoY,
                     brightColor);
             } else {
                 this.parentGui.drawCenteredString(
                     mc.fontRenderer,
                     DimensionUtil.idToName(entry.getDimensionId()),
                     this.x + this.width / 2,
-                    this.y + this.height + 15,
+                    infoY,
                     brightColor);
             }
             ClientUtil.restoreGLColor(bakColor);

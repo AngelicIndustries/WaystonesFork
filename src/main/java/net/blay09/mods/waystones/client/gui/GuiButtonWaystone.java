@@ -36,6 +36,8 @@ public class GuiButtonWaystone extends GuiButton {
 
     private final GuiWarpStone parentGui;
     public final String realName;
+    // The list shows shortened names in full under it while hovered
+    public final boolean nameShortened;
     public boolean pinned;
     private final boolean showVillageIcon;
 
@@ -49,8 +51,9 @@ public class GuiButtonWaystone extends GuiButton {
         while (Minecraft.getMinecraft().fontRenderer.getStringWidth(finalName) > maxNameWidth) {
             finalName = finalName.substring(0, finalName.length() - 1);
         }
-        if (finalName.length() != waystone.getName()
-            .length()) {
+        this.nameShortened = finalName.length() != waystone.getName()
+            .length();
+        if (nameShortened) {
             finalName += "...";
         }
         this.realName = waystone.getName();
