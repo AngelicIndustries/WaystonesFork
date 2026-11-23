@@ -1,7 +1,10 @@
 package net.blay09.mods.waystones.compat;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Random;
 
+import net.blay09.mods.waystones.Waystones;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
@@ -46,13 +49,9 @@ public class VillageNamesCompat {
 
         String[] name = NameGenerator.newRandomName("Village", rand);
 
-        Object[] banner = BannerGenerator.randomBannerArrays(rand, -1, -1);
-
-        @SuppressWarnings("unchecked")
-        java.util.ArrayList<Integer> colors = (java.util.ArrayList<Integer>) banner[1];
-
-        int townColor = 15 - colors.get(0);
-        int townColor2 = colors.size() > 1 ? 15 - colors.get(1) : townColor;
+        int[] townColors = getTownColors(world, rand, ax, az);
+        int townColor = townColors[0];
+        int townColor2 = townColors[1];
 
         // 3) Store VN entry
         NBTTagList list = new NBTTagList();
@@ -78,4 +77,40 @@ public class VillageNamesCompat {
         return (name[1] + " " + name[2] + " " + name[3]).trim();
     }
 
+    // The village's banner colors. Village Names 5.0 picks them by village type, 4.x (GTNH's 4.6 too) without one.
+    private static int[] getTownColors(World world, Random rand, int x, int z) {
+        try {
+            for (Method method : BannerGenerator.class.getMethods()) {
+                if (!method.getName()
+                    .equals("randomBannerArrays")) {
+                    continue;
+                }
+                Object[] banner;
+                if (method.getParameterTypes().length == 4) {
+                    banner = (Object[]) method.invoke(null, rand, getVillageType(world, x, z), -1, -1);
+                } else if (method.getParameterTypes().length == 3) {
+                    banner = (Object[]) method.invoke(null, rand, -1, -1);
+                } else {
+                    continue;
+                }
+                @SuppressWarnings("unchecked")
+                ArrayList<Integer> colors = (ArrayList<Integer>) banner[1];
+                int townColor = 15 - colors.get(0);
+                return new int[] { townColor, colors.size() > 1 ? 15 - colors.get(1) : townColor };
+            }
+            Waystones.LOG.warn("No known Village Names banner generator, using random village colors");
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            Waystones.LOG.warn("Village Names banner generator failed, using random village colors", e);
+        }
+        return new int[] { rand.nextInt(16), rand.nextInt(16) };
+    }
+
+    // As Village Names 5.0 does for its own villages; only called with 5.0
+    private static Object getVillageType(World world, int x, int z) {
+        return FunctionsVN.VillageType.changeVillageTypeToNullIfDefaultedPlains(
+            FunctionsVN.VillageType.getVillageTypeFromBiome(world, x, z),
+            world,
+            x,
+            z);
+    }
 }

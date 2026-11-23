@@ -50,11 +50,11 @@ dependencies {
     compileOnly("com.mitchej123:supernova:0.1.2:api") { transitive = false }
 
     // implementation "mcp.mobius.waila:Waila:1.5.10_1.7.10"
-    // implementation(rfg.deobf("maven.modrinth:village-names:dbqnvxNP"))
+    // implementation(rfg.deobf("maven.modrinth:village-names:5.0-1.7"))
     // implementation ("com.falsepattern:falsetweaks-mc1.7.10:2.0.0:dev")
 
     compileOnly(rfg.deobf("curse.maven:waila-73488:2230518"))
-    compileOnly(rfg.deobf("maven.modrinth:village-names:dbqnvxNP"))
+    compileOnly(rfg.deobf("maven.modrinth:village-names:5.0-1.7"))
     compileOnly("curse.maven:journeymap-32274:6706112")
 
     //devOnlyNonPublishable(rfg.deobf("curse.maven:warpdrive-233565:2578306"))
